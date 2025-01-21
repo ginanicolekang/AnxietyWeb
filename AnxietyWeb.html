@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anxiety Web</title>
+  <link rel="stylesheet" href="https://use.typekit.net/fwx2kxj.css">
+  <style>
+    /* @import url("https://use.typekit.net/fwx2kxj.css"); */
+    body {
+      margin: 0;
+      font-family: 'Helvetica', sans-serif;
+      background-color: #fafaff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      cursor: none;
+    }
+
+    .custom-cursor {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      width: 32px;
+      height: 32px;
+    }
+
+    #cursorCanvas {
+      display: none;
+    }
+
+    @font-face {
+      font-family: 'Helvetica';
+      src: local('Helvetica'), local('Helvetica Regular');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    @font-face {
+  font-family: 'MyCursiveFont'; 
+  src: url('./fonts/Cursive.ttf') format('truetype'); 
+}
+    .container {
+      width: calc(100% - 30px);
+      height: calc(100% - 30px);
+      background-color: #fafaff;
+      border: none; 
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden; 
+      box-shadow: 0 0 5px 5px #dad8ef;
+    }
+
+    .input-container {
+      position: relative;
+      margin-bottom: 16px;
+      margin-top: 16px;
+      
+    }
+
+    .text-input {
+      width: 482px;
+      height: 31px;
+      border: none; 
+      border-radius: 31px;
+      padding-left: 12px;
+      padding-right: 55px;
+      color: #662d91;
+      font-size: 12pt;
+      outline: none;
+      box-sizing: border-box;
+      box-shadow: 0 0 5px 5px #dad8ef;
+    }
+
+    .text-input::placeholder {
+      color: #e7ddf2;
+    }
+
+    .enter-button {
+      position: absolute;
+      right: 4px;
+      top: 4px;
+      width: 47px;
+      height: 22px;
+      border: none;
+      background-color: #fafaff;
+      color: #662d91;
+      font-size: 10pt;
+      font-family: 'Helvetica', sans-serif;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 5px 5px #dad8ef;
+    }
+
+    .enter-button:hover {
+      background-color: #dad8ef;
+      color: #662d91;
+      border: none;
+      box-shadow: 0 0 5px 5px #dad8ef;
+    }
+
+    .finish-button {
+  width: 100px;
+  height: 100px;
+  border: none;
+  background-color: #f1f0ff;
+  color: #662d91;
+  font-size: 11pt;
+  font-family: 'Helvetica', sans-serif;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 1s, color 1s, box-shadow 1s, visibility 1s, opacity 1s;
+  position: absolute; /* Make the button position relative to the .container */
+  right: 40px; /* Adjust distance from the right edge of the .container */
+  bottom: 40px; /* Adjust distance from the bottom edge of the .container */
+  display: flex; /* Ensure the button remains in the layout */
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  box-shadow: 0 0 10px 10px #dad8ef;
+  margin-top: 17px;
+  visibility: hidden; /* Hide the button but keep its space */
+  opacity: 0; /* Ensure it’s fully transparent */
+}
+
+.finish-button.show {
+  visibility: visible; /* Make it visible */
+  opacity: 1; /* Ensure it’s fully opaque */
+}
+
+
+    .finish-button:hover {
+      background-color: #916db4;
+      color: #f1f0ff;
+      border: none;
+      box-shadow: 0 0 10px 10px #916db4;
+    }
+
+    .floating-text {
+      position: absolute;
+      color: #662d91;
+      font-size: 12pt;
+      text-align: left; /* Center text alignment */
+      animation: float 10s infinite;
+      white-space: normal; /* Allow text to wrap */
+      word-wrap: break-word; /* Break long words to wrap */
+      overflow-wrap: break-word; /* Ensures compatibility */
+      max-width: 10%; /* Limit text width to a percentage of the oval/container width */
+      box-shadow: 0 0 10px 10px #dad8ef; /* Add shadow to text */
+      z-index: 2; /* Ensure text is above background elements */
+      border-radius: 12px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+
+    @keyframes float {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(10px, -10px); }
+      100% { transform: translate(-10px, 10px); }
+    }
+
+
+
+    .oval {
+      position: absolute;
+      width: 95vw; /* Adjust to fit the screen width */
+      height: 95vh; 
+      background-color: #ffffff;
+      border-radius: 50%;
+      filter: blur(20px);
+      display: none;
+      z-index: 1;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0; /* Start fully transparent */
+      visibility: hidden; /* Hidden by default */
+      transition: opacity 1s ease, visibility 1s ease;
+    }
+
+    .oval.show {
+  display: block; /* Ensure it's displayed */
+  opacity: 1; /* Fade in */
+  visibility: visible; /* Ensure it's visible */
+}
+
+    .floating-inside-oval {
+      position: absolute;
+      color: #662d91;
+      animation: float 10s infinite;
+      /* animation: hover-inside 5s infinite; */
+      text-align: left; 
+      white-space: normal; /* Allow text to wrap */
+      word-wrap: break-word; /* Break long words to wrap */
+      overflow-wrap: break-word; /* Ensures compatibility */
+      max-width: 10%; /* Limit text width to a percentage of the oval/container width */
+      z-index: 2; /* Ensure text is above the oval */
+    }
+
+    @keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+    .focus-text {
+      font-family: "MyCursiveFont", sans-serif;
+      font-weight: 400;
+      font-style: normal;
+      font-size: calc(1.5vw + 1.5vh);;
+      position: absolute;
+      color: #662d91;
+      pointer-events: none;
+      z-index: 5;
+      animation: blink 2s infinite;
+      /* top: 50% !important; */
+      left: calc(50% + 14px) !important;
+      transform: translate(-40%, -50%) important!;
+      text-align: center important!;
+      }
+
+    .oval-border-text {
+      font-family: "platelet", sans-serif;
+      font-weight: 400;
+      font-style: normal;
+      
+      font-size: 50pt !important;
+      transform: scale(1.1);
+      position: absolute;
+      /* font-family: 'Bahnschrift', sans-serif; */
+      color: rgb(174, 150, 200);
+      
+      pointer-events: none;
+      z-index: 3;
+      }
+
+      .oval-border-text span {
+        position: absolute;
+  font-size: 15pt !important;
+  transform-origin: center;
+  z-index: 4;
+  display: inline-block; /* Ensure each letter animates independently */
+      }
+
+      @keyframes colorFade {
+  0% {
+    color: rgb(199, 197, 197); /* Starting color */
+  }
+  100% {
+    color: #662d91;
+  }
+
+}
+@keyframes colored {
+  0% {
+    color: rgb(199, 197, 197); /* Starting color */
+  }
+  /* 50% {
+    color: purple;
+  } */
+  100% {
+    color: #662d91; /* Reset to grey for looping */
+  }
+}
+    @keyframes hover-inside {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(10px, -10px); }
+      100% { transform: translate(-10px, 10px); }
+    }
+
+  .pie-chart-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  width: 150px;
+  left: 50%;
+  transform: translateX(-50%, -50%);
+  z-index: 10000;
+  top: calc(50% or exact px shifter);
+}
+
+.pie-group {
+  display: flex;
+  flex-direction: column; 
+  gap: 10px; 
+  z-index: 100000;
+}
+
+.pie-chart {
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  display: none; 
+  z-index: 100000;
+}
+
+.initial-pie-chart{
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  display: none; 
+  z-index: 10000;
+}
+
+
+.corner {
+  position: fixed;
+  width: 80px; /* Adjust the size of the images */
+  height: 80px; /* Adjust the size of the images */
+  display: none;
+  transition: background-color 1s ease;
+  z-index: 9999; /* Ensure the images are above other elements */
+}
+
+.top-left {
+  top: 0;
+  left: 0;
+  margin: 10px; /* Add some spacing from the edges */
+}
+
+.top-right {
+  top: 0;
+  right: 0;
+  margin: 10px; /* Add some spacing from the edges */
+}
+
+.bottom-left {
+  bottom: 0;
+  left: 0;
+  margin: 10px; /* Add some spacing from the edges */
+}
+
+.bottom-right {
+  bottom: 0;
+  right: 0;
+  margin: 10px; /* Add some spacing from the edges */
+}
+
+.corner-bg {
+  position: fixed;
+  width: 50vw; /* Half the screen width */
+  height: 50vh; /* Half the screen height */
+  z-index: 0; /* Place it below the corner images */
+  background-color: transparent; /* Initial transparent color */
+  transition: background-color 0.5s ease, opacity 0.5s ease;
+  opacity: 0;
+  /* backdrop-filter: blur(2px); */
+  filter: blur(30px);
+  display: none;
+}
+
+.corner-bg.top-left-bg {
+  top: 0;
+  left: 0;
+}
+
+.corner-bg.top-right-bg {
+  top: 0;
+  left: 50vw;
+}
+
+.corner-bg.bottom-right-bg {
+  top: 50vh;
+  left: 50vw;
+}
+
+.corner-bg.bottom-left-bg {
+  top: 50vh; /* Start at the middle vertically */
+  left: 0;
+}
+
+.restart-button {
+  width: 100px;
+  height: 100px;
+  border: none;
+  border: transparent;
+  background-color: #f1f0ff;
+  color: #662d91;
+  font-size: 11pt;
+  font-family: 'Helvetica', sans-serif;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px 10px #dad8ef;
+  transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}
+
+.restart-button:hover {
+  background-color: #916db4;
+  color: #f1f0ff;
+  box-shadow: 0 0 10px 10px #916db4;
+}
+
+.question-mark {
+  position: absolute;
+  top: 30px; /* Adjust as needed for spacing */
+  left: 30px; /* Adjust as needed for spacing */
+  width: 30px;
+  height: 30px;
+  border-radius: 50%; /* Circle shape */
+  background-color: #f1f0ff;
+  color: #662d91;
+  font-size: 17px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 0 5px 5px #dad8ef;
+  z-index: 10;
+  transition: background-color 1s, color 1s, box-shadow 1s, visibility 1s, opacity 1s;
+}
+
+.question-mark:hover {
+  background-color: #dad8ef;
+  color: #662d91;
+}
+
+.tooltip {
+  position: absolute;
+  width: 150px;
+  left: 460%;
+  top: 12%;
+  text-align: left;
+  transform: translateX(-50%);
+  background-color: #fafaff;
+  color: #662d91;
+  font-size: 12.5px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 0 5px 5px #dad8ef;
+  visibility: hidden; /* Initially hidden */
+  opacity: 0; /* Initially transparent */
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  z-index: 11;
+}
+
+.question-mark:hover .tooltip {
+  visibility: visible; /* Show on hover */
+  opacity: 1; /* Fade in */
+}
+
+.hidden {
+  display: none;
+}
+
+ 
+
+
+
+  </style>
+</head>
+
+<body>
+  <canvas id="cursorCanvas" class="custom-cursor"></canvas>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <div class="container">
+    <div class="input-container">
+      <input
+        type="text"
+        class="text-input"
+        placeholder="What Are You Anxious About?"
+      />
+      <button class="enter-button">enter</button>
+    </div>
+    <button class="finish-button">breathe</button>
+  </div>
+  <div class="question-mark">
+    ?
+    <div class="tooltip"> 
+      Use this space to write out and interact with your anxious thoughts. Once you are ready, the website will guide you through 
+      four rounds of Box-Breathing. Blow into your mic to clear your mind as your worries fade away.
+    </div>
+  </div>
+  
+  <div class="oval"></div>
+  <div class="pie-chart-row">
+    <div class="pie-group" id="group-1">
+      <!-- <img src="piecharts/pie0.png" alt="Pie Chart 0" class="initial-pie-chart"> -->
+      <img src="piecharts/pie1.png" alt="Pie Chart 1" class="pie-chart">
+      <img src="piecharts/pie2.png" alt="Pie Chart 2" class="pie-chart">
+      <img src="piecharts/pie3.png" alt="Pie Chart 3" class="pie-chart">
+      <img src="piecharts/pie4.png" alt="Pie Chart 4" class="pie-chart">
+    </div>
+    <div class="pie-group" id="group-2">
+      <img src="piecharts/pie0.png" alt="Pie Chart 0" class="initial-pie-chart">
+      <img src="piecharts/pie1.png" alt="Pie Chart 1" class="pie-chart">
+      <img src="piecharts/pie2.png" alt="Pie Chart 2" class="pie-chart">
+      <img src="piecharts/pie3.png" alt="Pie Chart 3" class="pie-chart">
+      <img src="piecharts/pie4.png" alt="Pie Chart 4" class="pie-chart">
+    </div>
+    <div class="pie-group" id="group-3">
+      <img src="piecharts/pie0.png" alt="Pie Chart 0" class="initial-pie-chart">
+      <img src="piecharts/pie1.png" alt="Pie Chart 1" class="pie-chart">
+      <img src="piecharts/pie2.png" alt="Pie Chart 2" class="pie-chart">
+      <img src="piecharts/pie3.png" alt="Pie Chart 3" class="pie-chart">
+      <img src="piecharts/pie4.png" alt="Pie Chart 4" class="pie-chart">
+    </div>
+    <div class="pie-group" id="group-4">
+      <img src="piecharts/pie0.png" alt="Pie Chart 0" class="initial-pie-chart">
+      <img src="piecharts/pie1.png" alt="Pie Chart 1" class="pie-chart">
+      <img src="piecharts/pie2.png" alt="Pie Chart 2" class="pie-chart">
+      <img src="piecharts/pie3.png" alt="Pie Chart 3" class="pie-chart">
+      <img src="piecharts/pie4.png" alt="Pie Chart 4" class="pie-chart">
+    </div>
+  </div>
+
+    <img src="piecharts/corner1.png" alt="Top Left" class="corner top-left">
+    <img src="piecharts/corner2.png" alt="Top Right" class="corner top-right">
+    <img src="piecharts/corner4.png" alt="Bottom Left" class="corner bottom-left">
+    <img src="piecharts/corner3.png"  alt="Bottom Right" class="corner bottom-right">
+    <div class="corner-bg top-left-bg"></div>
+<div class="corner-bg top-right-bg"></div>
+<div class="corner-bg bottom-right-bg"></div>
+<div class="corner-bg bottom-left-bg"></div>
+
+
+  <script>
+    let isAnimationTriggered = false; // To prevent re-triggering animations
+    const textInput = document.querySelector('.text-input');
+    const enterButton = document.querySelector('.enter-button');
+    const finishButton = document.querySelector('.finish-button');
+    
+    const container = document.querySelector('.container');
+    const oval = document.querySelector('.oval');
+
+    const questionMark = document.querySelector('.question-mark');
+
+finishButton.addEventListener('click', () => {
+  const oval = document.querySelector('.oval');
+  const questionMark = document.querySelector('.question-mark');
+
+  if (oval) {
+    oval.classList.add('show'); // Add the 'show' class to trigger the fade-in transition
+  }
+  
+  oval.style.display = 'block';
+  document.body.style.backgroundColor = '#ebebff';
+
+  container.style.transition = 'opacity 0.5s ease, visibility 0.5s ease';
+  container.style.opacity = '0'; // Fade out effect
+  container.style.visibility = 'hidden';
+
+  // Hide the question mark
+  if (questionMark) {
+    questionMark.style.display = 'none';
+  }
+
+  // Continue with the rest of your code...
+  let textContainer = document.querySelector('.oval-border-text');
+  if (!textContainer) {
+    textContainer = document.createElement('div');
+    textContainer.classList.add('oval-border-text');
+    textContainer.style.zIndex = 3; // Ensure text is above the oval
+    document.body.appendChild(textContainer);
+  }
+
+//   if (document.querySelectorAll('.floating-inside-oval').length === 0) {
+//     console.log("All text removed! Showing message...");
+//     showRestartButton();
+//   }
+
+});
+
+    let placeholderRemoved = false;
+
+    textInput.addEventListener('input', () => {
+      if (textInput.value.trim().length > 0) {
+        enterButton.style.visibility = 'visible'; // Show the button
+        enterButton.style.color = '#662d91'; // Highlight the text
+        enterButton.style.pointerEvents = 'auto'; // Enable interactions
+  } else {
+    enterButton.style.color = '#dad8ef'; // Gray out the text
+    enterButton.style.pointerEvents = 'none'; // Disable interactions
+      
+      }
+
+      // Show the "Enter" button only if there is actual text
+      if (textInput.value.trim().length > 0) {
+        enterButton.style.display = 'flex';
+      } else {
+        enterButton.style.display = 'none';
+      }
+    });
+
+    enterButton.addEventListener('click', () => {
+  if (textInput.value.trim().length > 0) {
+    createFloatingText(textInput.value.trim());
+    textInput.value = ''; // Clear text input
+    textInput.focus();
+    enterButton.style.color = '#dad8ef';
+    finishButton.classList.add('show'); // Make the finish button visible
+  }
+});
+
+textInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && textInput.value.trim().length > 0) {
+    createFloatingText(textInput.value.trim());
+    textInput.value = ''; // Clear text input
+    textInput.focus();
+    enterButton.style.color = '#dad8ef';
+    finishButton.classList.add('show'); // Make the finish button visible
+  }
+});
+
+    // enterButton.addEventListener('click', () => {
+    //   if (textInput.value.trim().length > 0) {
+    //     createFloatingText(textInput.value.trim());
+    //     textInput.value = ''; // Clear text input
+    //     enterButton.style.display = 'none';
+    //     finishButton.style.display = 'flex';
+    //   }
+    // });
+
+    // textInput.addEventListener('keypress', (e) => {
+    //   if (e.key === 'Enter' && textInput.value.trim().length > 0) {
+    //     createFloatingText(textInput.value.trim());
+    //     textInput.value = '';
+    //     enterButton.style.display = 'none';
+    //     finishButton.style.display = 'flex';
+    //   }
+    // });
+
+// ------------------------------------------------------------------------
+// PIECHARTROW JAVA
+
+ // Initialize the canvas
+ const canvas = document.getElementById('cursorCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Set canvas size
+    canvas.width = 64;
+    canvas.height = 64;
+
+    // Draw the custom cursor (example: a simple circle)
+    ctx.save();
+    ctx.shadowColor = 'rgba(218, 216, 239, 0.5)'
+    ctx.shadowBlur = 10; // Shadow blur amount
+    ctx.shadowOffsetX = 0; // Horizontal shadow offset
+    ctx.shadowOffsetY = 0; // Vertical shadow offset
+
+    ctx.beginPath();
+    ctx.arc(32, 32, 10, 0, Math.PI * 2);
+    ctx.fillStyle = '#dad8ef'; // Purple color
+    ctx.fill();
+    ctx.closePath();
+    ctx.strokeStyle = 'transparent'; // Explicitly set no stroke
+    ctx.restore();
+    ctx.lineJoin = 'round'; // Smooth joins
+    ctx.lineCap = 'round';
+
+    // Update the canvas as a CSS cursor
+    const cursorDataURL = canvas.toDataURL();
+    document.body.style.cursor = `url(${cursorDataURL}) 32 32, auto`; // Hotspot is at (16, 16)
+
+    canvas.remove();
+
+    
+
+    function positionPieChartRow() {
+
+  const focusText = document.querySelector('.focus-text');
+  const pieChartRow = document.querySelector('.pie-chart-row');
+
+  if (focusText && pieChartRow) {
+    const focusTextRect = focusText.getBoundingClientRect();
+
+    const offsetTop = focusTextRect.bottom + 5;
+    console.log('Setting pie-chart-row top to:', offsetTop);
+
+    pieChartRow.style.position = 'absolute';
+    pieChartRow.style.top = `${offsetTop}px`;
+    pieChartRow.style.left = '50%';
+    pieChartRow.style.transform = 'translateX(-50%)'; 
+  } else {
+    console.error('focus-text or pie-chart-row not found.');
+    
+    // pieChartRow.style.top = `${textRect.bottom + 50}px`; 
+ 
+    
+    // pieChartRow.style.display = 'flex'; 
+    // pieChartRow.style.justifyContent = 'center';
+
+    
+  }
+}
+
+// positionPieChartRow();
+
+// window.addEventListener('resize', positionPieChartRow);
+
+// console.log('positionPieChartRow executed');
+
+function ensureFocusTextRendered(callback) {
+  const focusText = document.querySelector('.focus-text');
+
+  if (focusText) {
+    callback();
+  } else {
+    console.log('Waiting for .focus-text to render...');
+    const observer = new MutationObserver((mutations, obs) => {
+      const focusText = document.querySelector('.focus-text');
+      if (focusText) {
+        callback();
+        obs.disconnect(); // Stop observing once found
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+}
+
+// Attach the function to render events
+ensureFocusTextRendered(() => {
+  positionPieChartRow();
+  window.addEventListener('resize', positionPieChartRow);
+});
+
+// ----------------------------------------------------------
+
+function placeFocusText() {
+  console.log("placeFocusText is running");
+  const oval = document.querySelector('.oval');
+  const focusText = document.querySelector('.focus-text');
+
+  if (oval && focusText) {
+    const ovalRect = oval.getBoundingClientRect();
+    const centerX = ovalRect.left + ovalRect.width / 2 + 30; // Add offset to the right
+    const centerY = ovalRect.top + 50;
+
+    focusText.style.left = `${centerX}px`;
+    focusText.style.top = `${centerY}px`;
+    focusText.style.transform = 'translate(-50%, -50%)'; // Keep vertical alignment
+    console.log(`Focus text position updated: left=${centerX}px, top=${centerY}px`);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  placeFocusText(); // Ensure position is recalculated on load
+});
+
+// Call the function after rendering `.focus-text` and `.oval`
+placeFocusText();
+window.addEventListener('resize', placeFocusText);
+
+//FUNCTION TO PLACE TEXT ON THE TOP OF THE OVAL
+  function placeTopText() {
+  const ovalRect = oval.getBoundingClientRect();
+  const centerX = ovalRect.x + ovalRect.width / 2; // Center of the oval
+  const topY = ovalRect.y +50; // Top of the oval
+
+  // Create the top text element
+  let topText = document.querySelector('.focus-text');
+  if (!topText) {
+    topText = document.createElement('div');
+    topText.classList.add('focus-text');
+    topText.textContent = '((( Breathe into your mic )))';
+    document.body.appendChild(topText);
+  }
+
+  // Style the top text element
+  topText.style.position = 'absolute';
+  topText.style.left = `${centerX}px`;
+  topText.style.top = `${topY }px`; // Adjust slightly above the oval's top
+  topText.style.transform = 'translateX(-50%)'; // Center the text horizontally
+  topText.style.textAlign = 'center';
+}
+
+
+
+//FUNCTIONS TO SHOW PIE CHARTS
+function showPieCharts() {
+  const pieCharts = document.querySelectorAll('.pie-chart');
+  const initpieCharts = document.querySelectorAll('.initial-pie-chart');
+  const groups = document.querySelectorAll('.pie-group');
+  let currentIndex = 0;
+  positionPieChartRow();
+  groups.forEach(group=> {
+    initpieCharts.forEach((chart,index) =>{
+        chart.style.display = 'block';
+    })
+    });
+  // Function to display the next chart
+  function displayNextChart() {
+    pieCharts.forEach((chart, index) => {
+      // Keep the 4th, 8th, 12th, and 16th charts visible once shown
+      if ([3, 7, 11, 15].includes(index)) {
+        chart.style.display = index <= currentIndex ? 'block' : 'none';
+      } 
+      // else if([4,8,12].includes(index)){
+
+      // }
+      else {
+        chart.style.display = index === currentIndex ? 'block' : 'none';
+      }
+    });
+
+    currentIndex++;
+    if (currentIndex >= pieCharts.length) {
+      clearInterval(interval); // Stop the interval when all charts are shown
+    }
+  }
+  setTimeout(() => {
+    displayNextChart();
+  // Show one chart every 4 seconds
+  const interval = setInterval(displayNextChart, 4000);
+
+  // Stop the sequence after all charts are displayed once (optional)
+  setTimeout(() => {
+    clearInterval(interval);
+    // pieCharts.forEach(chart => chart.style.display = 'none'); // Hide all charts
+  }, pieCharts.length * 4000); // 16 charts * 4 seconds each
+  })
+  
+}
+
+
+    //FUNCTION TO PLACE TEXT AROUND OVAL
+    function placeTextAroundOval() {
+  const ovalRect = oval.getBoundingClientRect();
+  const offsetX = ovalRect.width * 0.025; // Adjust 5% of the width
+const offsetY = ovalRect.height * 0.025; // Adjust 5% of the height
+  const centerX = ovalRect.x - offsetX;
+  const centerY = ovalRect.y - offsetY;
+
+  console.log('Oval Rect:', ovalRect);
+  console.log('Oval Center:', { centerX, centerY });
+
+  // Radii for the oval (recalculated on resize)
+  const radiusX = ovalRect.width / 2.2;
+  const radiusY = ovalRect.height / 2.2;
+
+  // Define the custom phrases and angles
+  const phraseAngles = [
+    { text: 'I', type: 'letters' ,angle: -Math.PI + (1.28 * Math.PI) / 12},
+    { text: 'N', type: 'letters', angle: -Math.PI + (1.5 * Math.PI) / 12},
+    { text: 'H', type: 'letters',angle: -Math.PI + (1.7 * Math.PI) / 12},
+    { text: 'A', type: 'letters',angle: -Math.PI + (1.9 * Math.PI) / 12},
+    { text: 'L', type: 'letters',angle: -Math.PI + (2.1* Math.PI) / 12},
+    { text: 'E', type: 'letters',angle: -Math.PI + (2.28 * Math.PI) / 12}, // Top left of the oval
+    { text: '1', angle: -Math.PI + (2.97 * Math.PI) / 12},
+    { text: '2', angle: -Math.PI + (3.43 * Math.PI) / 12 },
+    { text: '3', angle: -Math.PI + (3.87 * Math.PI) / 12},
+    { text: '4', angle: -Math.PI + (4.27 * Math.PI) / 12 },
+
+
+    { text: 'H', type: 'letters-ho',angle: -Math.PI / 2.30 + Math.PI / 12  },
+    { text: 'O', type: 'letters-ho',angle: -Math.PI / 2.37 + Math.PI / 12  },
+    { text: 'L', type: 'letters-ho',angle: -Math.PI / 2.45 + Math.PI / 12  },
+    { text: 'D', type: 'letters-ho',angle: -Math.PI / 2.54 + Math.PI / 12  }, // Top Right of the oval
+    { text: '1', angle: -Math.PI / 2.91 + Math.PI / 12 },
+    { text: '2', angle: -Math.PI / 3.33 + Math.PI / 12 },
+    { text: '3', angle: -Math.PI / 3.96 + Math.PI / 12 },
+    { text: '4', angle: -Math.PI / 5 + Math.PI / 12 },
+
+
+    { text: 'E', angle: 0 + (1.5 * Math.PI) / 12  }, 
+    { text: 'L', angle: 0 + (1.67 * Math.PI) / 12  },
+    { text: 'A', angle: 0 + (1.85 * Math.PI) / 12  },
+    { text: 'H', angle: 0 + (2.03 * Math.PI) / 12  },
+    { text: 'X', angle: 0 + (2.20 * Math.PI) / 12  },
+    { text: 'E', angle: 0 + (2.37 * Math.PI) / 12  },// Bottom of the oval
+    { text: '1', angle: 0 + (3 * Math.PI) / 12  },
+    { text: '2', angle:0 + (3.48 * Math.PI) / 12 },
+    { text: '3', angle: 0 + (3.92 * Math.PI) / 12  },
+    { text: '4', angle: 0 + (4.35 * Math.PI) / 12  },
+
+    { text: 'D', angle: Math.PI / 2 + (1.8 * Math.PI) / 12 },
+    { text: 'L', angle: Math.PI / 2 + (1.95 * Math.PI) / 12 },
+    { text: 'O', angle: Math.PI / 2 + (2.1 * Math.PI) / 12 },
+    { text: 'H', angle: Math.PI / 2 + (2.25 * Math.PI) / 12 }, // Left of the oval
+    { text: '1', angle: Math.PI / 2 + (2.85 * Math.PI) / 12 },
+    { text: '2', angle: Math.PI / 2 + (3.34 * Math.PI) / 12  },
+    { text: '3', angle: Math.PI / 2 + (3.87 * Math.PI) / 12  },
+    { text: '4', angle: Math.PI / 2 + (4.45 * Math.PI) / 12  }
+  ];
+
+  const textContainer = document.querySelector('.oval-border-text');
+
+
+  // Check if spans already exist
+  if (textContainer.childElementCount === 0) {
+    // Initial creation of spans
+    phraseAngles.forEach(({ text, angle }, index) => {
+      const x = centerX + radiusX * Math.cos(angle);
+      const y = centerY + radiusY * Math.sin(angle);
+
+      const textElement = document.createElement('span');
+      textElement.textContent = text;
+      textElement.style.position = 'absolute';
+      textElement.style.fontFamily = !isNaN(text) ? 'bahnschrift, sans-serif' : 'platelet, sans-serif';
+      textElement.style.fontSize = '12px';
+      // textElement.style.color = 'grey'; // Initial color
+      textElement.style.zIndex = '4';
+      let rotationAngle;
+    if (index >= phraseAngles.length - 18) {
+    rotationAngle = (angle * 180) / Math.PI - 90;
+  } else {
+    rotationAngle = (angle * 180) / Math.PI + 90;
+  }
+      // Position and rotation
+      textElement.style.left = `${x}px`;
+      textElement.style.top = `${y}px`;
+      textElement.style.transform = `translate(-50%, -50%)`;
+// Add staggered animation
+    // textElement.style.animation = 'colorFade 1s none';
+    // textElement.style.animationDelay = `${index * 0.2}s`;
+      // Add to container
+
+      if (!isNaN(text)) {
+        textElement.classList.add('numbers'); // Letters
+
+      } 
+      if([0,1,2,3,4,5].includes(index)){
+        textElement.classList.add('letters'); // Letters
+      }
+      if([10,11,12,13].includes(index)){
+        textElement.classList.add('letters-ho'); // Letters
+      }
+      if([18,19,20,21,22,23].includes(index)){
+        textElement.classList.add('letters-ex'); // Letters
+      }
+      if([28,29,30,31].includes(index)){
+        textElement.classList.add('letters-ho2'); // Letters
+      }
+      textContainer.appendChild(textElement);
+    });
+    const maxDelay = (phraseAngles.length - 1) * 0.2; 
+    
+    // Trigger animation for first creation
+    // animateLetters();
+  } else {
+    // Adjust positions of existing spans on resize
+    const spans = textContainer.querySelectorAll('span');
+    spans.forEach((span, index) => {
+      const { angle } = phraseAngles[index];
+      const x = centerX + radiusX * Math.cos(angle);
+      const y = centerY + radiusY * Math.sin(angle);
+      let rotationAngle;
+    if (index >= phraseAngles.length - 18) {
+    rotationAngle = (angle * 180) / Math.PI - 90;
+  } else {
+    rotationAngle = (angle * 180) / Math.PI + 90;
+  }
+      // Update position only
+      span.style.left = `${x}px`;
+      span.style.top = `${y}px`;
+      span.style.transform = `translate(-50%, -50%) rotate(${rotationAngle}deg)`;
+    });
+  }
+
+//   setTimeout(() => {
+//   console.log('This runs after 2 seconds');
+//   // Place the function or logic you want to trigger here
+//   animateLetters();
+// }, 5000); 
+}
+
+function animateLetters() {
+  const textContainer = document.querySelector('.oval-border-text');
+  const letters = textContainer.querySelectorAll('.letters');
+  const numbers = textContainer.querySelectorAll('.numbers');
+  const exhaleLetters = textContainer.querySelectorAll('.letters-ex');
+  const holdletters = textContainer.querySelectorAll('.letters-ho');
+  const holdletters2 = textContainer.querySelectorAll('.letters-ho2');
+
+  letters.forEach((letter) => {
+    letter.style.animation = 'colored 1s forwards';
+  });
+  // Animate numbers sequentially
+  numbers.forEach((number, index) => {
+    setTimeout(() => {
+      number.style.animation = 'colored 1s forwards';
+    }, index * 990); // 1-second delay between numbers
+  });
+  setTimeout(() => {
+    holdletters.forEach((letter) => {
+      letter.style.animation = 'colored 1s forwards';
+    });
+  
+  }, 4000);
+  setTimeout(() => {
+   
+    exhaleLetters.forEach((letter) => {
+      letter.style.animation = 'colored 1s forwards';
+    });
+  
+  }, 8000);
+  setTimeout(() => {
+    
+    holdletters2.forEach((letter) => {
+      letter.style.animation = 'colored 1s forwards';
+    });
+  
+  }, 12000);
+
+  setTimeout(() => {
+    letters.forEach((letter) => {
+      letter.style.animation = '';
+    });
+    numbers.forEach((letter)=>{
+      letter.style.animation = '';
+    });
+  holdletters.forEach((letter) => {
+      letter.style.animation = '';
+    });
+    exhaleLetters.forEach((letter) => {
+      letter.style.animation = '';
+    });
+    holdletters2.forEach((letter) => {
+      letter.style.animation = '';
+    });
+   
+  
+  }, 15800);
+  
+}
+
+
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    placeTextAroundOval(); // Reposition spans without resetting animations
+    // updateFloatingTextPositions();
+  }, 10); // Adjust debounce delay as needed
+});
+
+const cornerBackgrounds = document.querySelectorAll('.corner-bg');
+let currentCornerIndex = 0;
+function changeCornerBackground() {
+  // Reset all corners to transparent
+  cornerBackgrounds.forEach((bg) => {
+    bg.style.backgroundColor = 'transparent';
+  });
+
+  // Update the background color for the current corner
+  cornerBackgrounds[currentCornerIndex].style.backgroundColor = '#916db4';
+
+  // Move to the next corner
+  currentCornerIndex = (currentCornerIndex + 1) % cornerBackgrounds.length;
+}
+
+
+
+finishButton.addEventListener('click', () => {
+    
+    setupMic();
+
+      oval.style.display = 'block';
+      document.body.style.backgroundColor = '#ebebff';
+
+      container.style.transition = 'opacity 0.5s ease, visibility 0.5s ease';
+      container.style.opacity = '0'; // Fade out effect
+      container.style.visibility = 'hidden';
+      
+
+// Create and position text around the oval
+let textContainer = document.querySelector('.oval-border-text');
+  if (!textContainer) {
+    textContainer = document.createElement('div');
+    textContainer.classList.add('oval-border-text');
+    textContainer.style.zIndex = 3; // Ensure text is above the oval
+    document.body.appendChild(textContainer);
+  }
+
+  const cornerImages = document.querySelectorAll('.corner');
+  cornerImages.forEach(image => {
+    image.style.display = 'block'; // Make the images visible
+  });
+
+  // Position text around the oval
+
+  placeTextAroundOval();
+
+
+
+// Start changing the background color every 4 seconds
+cornerBackgrounds.forEach((bg) => {
+    bg.style.opacity = 1; // Set visibility
+    bg.style.display = 'block';
+    bg.style.zIndex =0;
+  });
+  placeTopText();
+  setTimeout(() => {
+
+    showPieCharts();
+  changeCornerBackground();
+  intervalId =setInterval(changeCornerBackground, 4000);
+setTimeout(() => {
+    clearInterval(intervalId);
+  }, 64000); 
+
+  
+animateLetters();
+  setTimeout(() => {
+  console.log('This runs after 2 seconds');
+  // Place the function or logic you want to trigger here
+  animateLetters();
+}, 16000); 
+setTimeout(() => {
+  console.log('This runs after 2 seconds');
+  // Place the function or logic you want to trigger here
+  animateLetters();
+}, 32001); 
+setTimeout(() => {
+  console.log('This runs after 2 seconds');
+  // Place the function or logic you want to trigger here
+  animateLetters();
+}, 48001); 
+setTimeout(() => {
+  console.log('This runs after 2 seconds');
+  // Place the function or logic you want to trigger here
+  showRestartButton();
+}, 64001); 
+
+
+}, 4000)
+  // Recalculate positions dynamically on window resize
+  window.addEventListener('resize', placeTextAroundOval);
+  window.addEventListener('resize', placeTopText);
+  // window.addEventListener('resize', positionPieChartBox);
+  
+ 
+  // animateLetters();
+      const floatingTexts = document.querySelectorAll('.floating-text');
+      const ovalRect = oval.getBoundingClientRect();
+
+      const ovalCenterX = ovalRect.left + ovalRect.width / 2;
+  const ovalCenterY = ovalRect.top + ovalRect.height / 2;
+  const radiusX = ovalRect.width / 2;
+  const radiusY = ovalRect.height / 2;
+      floatingTexts.forEach((text) => {
+    // Stop the floating animation
+    text.style.animation = 'none';
+
+    let currentX = parseFloat(text.style.left || 0);
+    let currentY = parseFloat(text.style.top || 0);
+
+    const dx = currentX - ovalCenterX;
+    const dy = currentY - ovalCenterY;
+
+    // Normalize the position to check if it's inside the ellipse
+    const normalizedX = dx / radiusX;
+    const normalizedY = dy / radiusY;
+
+    if (normalizedX ** 2 + normalizedY ** 2 > 0.8) { // Move further inside by reducing the scale factor
+      const scaleFactor = 0.8 / Math.sqrt(normalizedX ** 2 + normalizedY ** 2);
+      currentX = ovalCenterX + dx * scaleFactor;
+      currentY = ovalCenterY + dy * scaleFactor;
+    }
+
+    // Animate text to the new position
+    text.style.transition = 'all 1s ease-in-out';
+    text.style.left = `${currentX}px`;
+    text.style.top = `${currentY}px`;
+    text.style.transform = `translate(-50%, -50%)`;
+    text.dataset.relativeX = (currentX - ovalRect.left) / ovalRect.width; // Store relative position
+    text.dataset.relativeY = (currentY - ovalRect.top) / ovalRect.height; // Store relative position
+    text.classList.remove('floating-text');
+    text.classList.add('floating-inside-oval');
+  });
+
+  // Attach resize logic
+  window.addEventListener('resize', updateTextPositionsOnResize);
+    });
+
+
+
+    function updateTextPositionsOnResize() {
+  const ovalRect = oval.getBoundingClientRect();
+  const ovalCenterX = ovalRect.left + ovalRect.width / 2;
+  const ovalCenterY = ovalRect.top + ovalRect.height / 2;
+
+  const radiusX = ovalRect.width / 2;
+  const radiusY = ovalRect.height / 2;
+
+  const floatingTexts = document.querySelectorAll('.floating-inside-oval');
+  floatingTexts.forEach((text) => {
+    const relativeX = parseFloat(text.dataset.relativeX || 0);
+    const relativeY = parseFloat(text.dataset.relativeY || 0);
+
+    const targetX = ovalRect.left + relativeX * ovalRect.width;
+    const targetY = ovalRect.top + relativeY * ovalRect.height;
+
+    // Check if the new position is inside the oval
+    const dx = targetX - ovalCenterX;
+    const dy = targetY - ovalCenterY;
+    const normalizedX = dx / radiusX;
+    const normalizedY = dy / radiusY;
+
+    let finalX = targetX;
+    let finalY = targetY;
+
+    if (normalizedX ** 2 + normalizedY ** 2 > 1) {
+      // If outside, adjust it inside
+      const scaleFactor = 1 / Math.sqrt(normalizedX ** 2 + normalizedY ** 2);
+      finalX = ovalCenterX + dx * scaleFactor;
+      finalY = ovalCenterY + dy * scaleFactor;
+    }
+
+    text.style.left = `${finalX}px`;
+    text.style.top = `${finalY}px`;
+    text.style.transform = `translate(-50%, -50%)`;
+  });
+}
+
+    function createFloatingText(content) {
+      const floatingText = document.createElement('div');
+      floatingText.classList.add('floating-text');
+      floatingText.textContent = content;
+
+      // Constrain the position to the inside of the rectangle
+      const containerRect = container.getBoundingClientRect();
+      const x =
+        Math.random() * (containerRect.width - 50) + containerRect.left + 25;
+      const y =
+        Math.random() * (containerRect.height - 50) + containerRect.top + 25;
+
+      floatingText.style.left = `${x}px`;
+      floatingText.style.top = `${y}px`;
+
+      document.body.appendChild(floatingText);
+    }
+
+    // ------------------------------------------------------------------------------------------
+
+    let currentRound = 1; // Track the current round of box breathing
+const totalRounds = 4; // Total number of rounds
+let allRoundsComplete = false; // Flag to track if all rounds are complete
+
+// Function to handle the blow action
+function handleBlow() {
+  console.log(`Blow detected in round ${currentRound}`);
+
+  const floatingTexts = document.querySelectorAll('.floating-inside-oval');
+
+  floatingTexts.forEach((text) => {
+    let currentOpacity = parseFloat(window.getComputedStyle(text).opacity);
+    if (isNaN(currentOpacity)) currentOpacity = 1;
+
+    const targetOpacity = 1 - (currentRound * 0.25); // Calculate target opacity for this round
+
+    if (currentOpacity > targetOpacity) {
+      const newOpacity = Math.max(targetOpacity, currentOpacity - 0.25);
+      text.style.opacity = newOpacity;
+
+      if (newOpacity <= 0 && currentRound === totalRounds) {
+        text.remove(); // Remove text only in the final round
+      }
+    }
+  });
+  
+
+  // Move to the next round
+  if (currentRound < totalRounds) {
+    currentRound++;
+    console.log(`Starting round ${currentRound}`);
+  }
+
+  const remainingVisibleTexts = Array.from(document.querySelectorAll('.floating-inside-oval')).filter((text) => {
+  const style = window.getComputedStyle(text);
+  return parseFloat(style.opacity) > 0;
+});
+
+if (remainingVisibleTexts.length === 0) {
+  console.log("All visible text removed! Showing message...");
+  showRestartButton();
+}
+
+  // Check if all rounds are complete and no floating text remains
+//   if (currentRound === totalRounds) {
+//     const remainingTexts = document.querySelectorAll('.floating-inside-oval');
+//     if (remainingTexts.length === 0 && !allRoundsComplete) {
+//       allRoundsComplete = true; // Prevent multiple triggers
+//       setTimeout(showRestartButton, 2000); // Delay to ensure smooth transition
+//     }
+//   }
+}
+
+// Function to show the Restart button
+function showRestartButton() {
+  if (document.querySelector('#restart-button')) return; // Prevent duplicate buttons
+
+  const button = document.createElement('button');
+  button.id = 'restart-button';
+  button.classList.add('restart-button');
+  button.textContent = 'Restart';
+
+  button.addEventListener('click', () => {
+    console.log("Restart button clicked! Reloading...");
+    window.location.reload(); // Reload the page
+  });
+
+  document.body.appendChild(button);
+}
+
+// Setup microphone and blow detection
+async function setupMic() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(analyser);
+
+    const data = new Uint8Array(analyser.frequencyBinCount);
+
+    let blowDetected = false; // Flag to prevent multiple detections during one blow
+    const cooldownTime = 4000; // Cooldown time in milliseconds (adjust as needed)
+
+    function detectBlow() {
+      analyser.getByteFrequencyData(data);
+      const average = data.reduce((sum, value) => sum + value, 0) / data.length;
+
+      if (average > 50 && !blowDetected) { // Sensitivity threshold and cooldown check
+        console.log("Blow detected! Average level:", average);
+        blowDetected = true; // Set flag to true
+
+        // Reduce opacity of floating text
+        const floatingTexts = document.querySelectorAll('.floating-inside-oval');
+        floatingTexts.forEach((text) => {
+          let currentOpacity = parseFloat(window.getComputedStyle(text).opacity);
+          if (isNaN(currentOpacity)) currentOpacity = 1;
+
+          const newOpacity = Math.max(0, currentOpacity - 0.25); // Reduce opacity by 25%
+          text.style.opacity = newOpacity;
+
+          if (newOpacity <= 0) {
+            text.remove();
+          }
+        });
+        
+        if (document.querySelectorAll('.floating-inside-oval').length === 0) {
+    console.log("All text removed! Showing message...");
+    showRestartButton();
+  }
+        // Reset blow detection flag after cooldown
+        setTimeout(() => {
+          blowDetected = false;
+        }, cooldownTime);
+      }
+
+      requestAnimationFrame(detectBlow);
+    }
+
+    detectBlow(); // Start detecting blow
+  } catch (error) {
+    console.error("Microphone access denied or error:", error);
+    // showRestartButton();
+  }
+}
+
+
+// Initialize microphone detection
+// setupMic();
+
+  </script>
+</body>
+</html>
