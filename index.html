@@ -57,12 +57,14 @@
       position: relative;
       overflow: hidden; 
       box-shadow: 0 0 5px 5px #dad8ef;
+      /* z-index: 10; */
     }
 
     .input-container {
       position: relative;
       margin-bottom: 16px;
       margin-top: 16px;
+      z-index: 10;
       
     }
 
@@ -78,6 +80,7 @@
       outline: none;
       box-sizing: border-box;
       box-shadow: 0 0 5px 5px #dad8ef;
+      z-index: 10;
     }
 
     .text-input::placeholder {
@@ -102,6 +105,7 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 0 5px 5px #dad8ef;
+      z-index: 10;
     }
 
     .enter-button:hover {
@@ -161,10 +165,7 @@
       box-shadow: 0 0 10px 10px #dad8ef; /* Add shadow to text */
       z-index: 2; /* Ensure text is above background elements */
       border-radius: 12px;
-      padding-top: 2px;
-      padding-bottom: 2px;
-      padding-left: 5px;
-      padding-right: 5px;
+      padding: 5px;
     }
 
     @keyframes float {
@@ -1155,6 +1156,7 @@ setTimeout(() => {
   const ovalCenterY = ovalRect.top + ovalRect.height / 2;
   const radiusX = ovalRect.width / 2;
   const radiusY = ovalRect.height / 2;
+  
       floatingTexts.forEach((text) => {
     // Stop the floating animation
     text.style.animation = 'none';
@@ -1232,20 +1234,80 @@ setTimeout(() => {
 
     function createFloatingText(content) {
       const floatingText = document.createElement('div');
-      floatingText.classList.add('floating-text');
-      floatingText.textContent = content;
+  floatingText.classList.add('floating-text');
+  floatingText.textContent = content;
 
-      // Constrain the position to the inside of the rectangle
-      const containerRect = container.getBoundingClientRect();
-      const x =
-        Math.random() * (containerRect.width - 50) + containerRect.left + 25;
-      const y =
-        Math.random() * (containerRect.height - 50) + containerRect.top + 25;
+  // Get container and viewport dimensions
+  const containerRect = container.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
 
-      floatingText.style.left = `${x}px`;
-      floatingText.style.top = `${y}px`;
+  let x, y;
+  let isOverlapping = true;
+  const margin = 10; // Minimum margin between texts
+  const maxIterations = 100; // Prevent infinite loops
+  let iterations = 0;
 
-      document.body.appendChild(floatingText);
+  // Retry positioning until no overlap is detected
+  while (isOverlapping && iterations < maxIterations) {
+    x = Math.random() * (containerRect.width - 50) + containerRect.left + 25;
+    y = Math.random() * (containerRect.height - 50) + containerRect.top + 25;
+
+    // Append to the body temporarily to calculate the size
+    document.body.appendChild(floatingText);
+
+    const textWidth = floatingText.offsetWidth;
+    const textHeight = floatingText.offsetHeight;
+
+    // Ensure text stays within viewport
+    x = Math.min(Math.max(x, margin), viewportWidth - textWidth - margin);
+    y = Math.min(Math.max(y, margin), viewportHeight - textHeight - margin);
+
+    // Check for overlap with existing floating texts
+    isOverlapping = false; // Assume no overlap initially
+    document.querySelectorAll('.floating-text').forEach((existingText) => {
+      const rect = existingText.getBoundingClientRect();
+
+      if (
+        x < rect.right + margin &&
+        x + textWidth > rect.left - margin &&
+        y < rect.bottom + margin &&
+        y + textHeight > rect.top - margin
+      ) {
+        isOverlapping = true; // Overlap detected, retry positioning
+      }
+    });
+
+    // If overlapping, remove temporary element to try again
+    if (isOverlapping) {
+      floatingText.remove();
+    }
+
+    iterations++;
+  }
+
+  if (isOverlapping) {
+    // Fallback: Stack the text at the bottom of the container
+    console.warn("No space available, stacking text in fallback position.");
+    x = containerRect.left + 10; // Fixed position near the container's left edge
+    y = containerRect.bottom - floatingText.offsetHeight - 10; // Stack at the bottom
+  }
+
+  // Finalize position
+  floatingText.style.left = `${x}px`;
+  floatingText.style.top = `${y}px`;
+
+  // Add the floating text to the document
+  document.body.appendChild(floatingText);
+      // const x =
+      //   Math.random() * (containerRect.width - 50) + containerRect.left + 25;
+      // const y =
+      //   Math.random() * (containerRect.height - 50) + containerRect.top + 25;
+
+      // floatingText.style.left = `${x}px`;
+      // floatingText.style.top = `${y}px`;
+
+      // document.body.appendChild(floatingText);
     }
 
     // ------------------------------------------------------------------------------------------
